@@ -1,21 +1,22 @@
 import express from "express"
 
 import contactsCTRL from "../../controllers/contactsCTRL.js";
+import { isValidId } from "../../middlewares/index.js";
 
 const router = express.Router()
 
 
 router.get('/', contactsCTRL.getAllContacts)
 
-router.get('/:contactId',contactsCTRL.getContactById)
+router.get("/:contactId", isValidId, contactsCTRL.getContactById);
 
-router.post('/',contactsCTRL.addContact)
+router.post("/",  contactsCTRL.addContact);
 
-router.delete('/:contactId', contactsCTRL.removeContact)
+router.delete("/:contactId", isValidId, contactsCTRL.removeContact);
 
-router.put("/:contactId", contactsCTRL.updateContact)
+router.put("/:contactId", isValidId, contactsCTRL.updateContact);
 
- router.patch("/:contactId/favorite", contactsCTRL.updateFavorite);
+ router.patch("/:contactId/favorite", isValidId, contactsCTRL.updateFavorite);
 
 
 
