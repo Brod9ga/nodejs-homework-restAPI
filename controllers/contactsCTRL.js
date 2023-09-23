@@ -5,8 +5,11 @@ import { Contact } from "../models/ContactsSchema.js";
 import { ctrlWrapper } from "../decorators/index.js";
 import contactsAddSchema, { contactsUpdateSchema } from "./SchemaJoi.js";
 
- const getAllContacts = async (req, res) => {
-   const result = await Contact.find();
+const getAllContacts = async (req, res) => {
+  const { _id: owner } = req.user
+  const { page = 1, limit = 10 } = req.query
+  const skip = limit * (page - 1);
+   const result = await Contact.find({owner}, {skip, limit}).populate("owner", "email");
    res.json(result);
 };
 
@@ -28,7 +31,8 @@ const addContact = async (req, res) => {
   if (error) {
     throw res.status(400).json("missing required name field");
   }
-  const result = await Contact.create(req.body);
+  const {_id:owner} = req.user
+  const result = await Contact.create({...req.body, owner});
   res.status(201).json(result);
 }
  

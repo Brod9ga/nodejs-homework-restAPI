@@ -9,12 +9,13 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters long"],
     },
     email: {
       type: String,
       required: [true, "Email is required"],
-      match: emailRegexp,
       unique: true,
+      match: emailRegexp,
     },
     subscription: {
       type: String,
@@ -26,8 +27,9 @@ const userSchema = new Schema(
       default: null,
     },
   },
-  { versionKey: false, timeseries: true }
+  { versionKey: false, timestamps: true }
 );
+
 
 userSchema.post("save", handleSaveError);
 
@@ -36,15 +38,16 @@ userSchema.pre("findOneAndUpdate", runValidateAtUpdate);
 userSchema.post("findOneAndUpdate", handleSaveError);
 
 export const userSignupSchema = Joi.object({
-  email: Joi.string().required(),
+  email: Joi.string().pattern(emailRegexp).required(),
   password: Joi.string().required(),
 });
 
 export const userSigninSchema = Joi.object({
-  email: Joi.string().email().required(),
+  email: Joi.string().pattern(emailRegexp).required(),
   password: Joi.string().required(),
 });
 
 const User = model("user", userSchema);
+User.collection.createIndex({ email: 1 }, { unique: true });
 
 export default User;
