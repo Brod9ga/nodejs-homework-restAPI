@@ -4,8 +4,13 @@ import { HttpError } from "../helpers/index.js";
 import bcrypt from "bcryptjs"
 import { token } from "morgan";
 import jwt from "jsonwebtoken"
+import gravatar from "gravatar"
+import path from "path"
+import Jimp from "jimp";
+import fs from "fs/promises";
 
 const {JWT_SECRET} = process.env
+const avatarPath = path.resolve("public", "avatars");
 
 const signup = async (req, res) => {  
   const { email, password } = req.body;
@@ -14,22 +19,24 @@ const signup = async (req, res) => {
   if (user) {
     throw HttpError(409, "Email in use");
   }
-   const hashPassword = await bcrypt.hash(password, 10)
-  const newUser = await User.create({...req.body, password: hashPassword});
+  const avatarUrl = gravatar.url(email);
+  const hashPassword = await bcrypt.hash(password, 10);
+  const newUser = await User.create({...req.body, password: hashPassword, avatarURL: avatarUrl});
 
     res.status(201).json({
       email: newUser.email,
       subscription: newUser.subscription,
+      avatarURL: newUser.avatarURL
     });
   
 }
  
 const signin = async (req, res) => { 
  
-  const { email, password } = req.body;
+  const { email, password} = req.body;
   const user = await User.findOne({ email: email });
 
-  if (!user || !user.token) {
+  if (!user) {
     throw HttpError(401, "Email or password is wrong");
   }
 
@@ -69,11 +76,32 @@ const logout = async (req, res) => {
   res.json({
 message: 'Logged out'
   })
- }
+}
+ 
+const updateAvatar = async (req, res) => {
+  const { _id } = req.user;
+  const { path: tempUpload, originalname } = req.file;
+  const filename = `${_id}_${originalname}`;
+  const resultUpload = path.join(avatarPath, filename);
+  await fs.rename(tempUpload, resultUpload);
+  const avatar = await Jimp.read(resultUpload);
+  await avatar.resize(250, 250).write(resultUpload);
+  const avatarURL = path.join("avatars", filename);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+
+  res.json({
+    status: "Success",
+    code: 200,
+    data: {
+      result: { avatarURL },
+    },
+  });
+};
 
 export default {
   signup: ctrlWrapper(signup),
   signin: ctrlWrapper(signin),
   getCurrent: ctrlWrapper(getCurrent),
-  logout: ctrlWrapper(logout)
+  logout: ctrlWrapper(logout),
+ updateAvatar: ctrlWrapper(updateAvatar)
 }
