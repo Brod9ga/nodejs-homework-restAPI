@@ -1,9 +1,11 @@
 import { HttpError } from "../helpers/index.js";
 import { Contact } from "../models/ContactsSchema.js";
 
-
+import path from "path";
 import { ctrlWrapper } from "../decorators/index.js";
 import contactsAddSchema, { contactsUpdateSchema } from "./SchemaJoi.js";
+
+
 
 const getAllContacts = async (req, res) => {
   const { _id: owner } = req.user
@@ -29,8 +31,10 @@ const addContact = async (req, res) => {
   if (error) {
     throw res.status(400).json("missing required name field");
   }
-  const {_id:owner} = req.user
-  const result = await Contact.create({...req.body, owner});
+  const { _id: owner } = req.user
+ 
+
+  const result = await Contact.create({ ...req.body, owner })
   res.status(201).json(result);
 }
  

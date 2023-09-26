@@ -26,6 +26,10 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    avatarURL: {
+      type: String,
+      default: null,
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -46,6 +50,10 @@ export const userSigninSchema = Joi.object({
   email: Joi.string().pattern(emailRegexp).required(),
   password: Joi.string().required(),
 });
+
+export const updateAvatar = Joi.object({
+  avatarURL: Joi.string().required()
+})
 
 const User = model("user", userSchema);
 User.collection.createIndex({ email: 1 }, { unique: true });
