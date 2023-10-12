@@ -30,6 +30,14 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+    verify: {
+      type: Boolean,
+      default: false,
+    },
+    verificationToken: {
+      type: String,
+      required: [true, "Verify token is required"],
+    },
   },
   { versionKey: false, timestamps: true }
 );
@@ -54,6 +62,10 @@ export const userSigninSchema = Joi.object({
 export const updateAvatar = Joi.object({
   avatarURL: Joi.string().required()
 })
+
+export const userEmailSchema = Joi.object({
+  email: Joi.string().pattern(emailRegexp).required(),
+});
 
 const User = model("user", userSchema);
 User.collection.createIndex({ email: 1 }, { unique: true });
